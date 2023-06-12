@@ -36,8 +36,8 @@ const selectors = {
  * This function creates a book preview element, 
  * extracts necessary data from the book object,
  * and creates a button element for the preview and sets inner HTML of the button with book data.
- * @param {*} book 
- * @returns 
+ * @param {object} book 
+ * @returns {element} 
  */
 
     function createBookPreview(book) {
@@ -72,8 +72,8 @@ selectors.listItems.appendChild(starting)
 
 /**
  * Function to create an option element for a dropdown
- * @param {*} value - The value of the option
- * @param {*} text - The text content of the option
+ * @param {string} value - The value of the option
+ * @param {string} text - The text content of the option
  * @returns {Element} - The created option element
  */
 function createOptionElement(value, text){
@@ -145,7 +145,7 @@ selectors.listClose.addEventListener('click', () => {
 })
 
 // Adding an event listener to the settings form submit event
-document.querySelector('[data-settings-form]').addEventListener('submit', (event) => {
+selectors.settingsForm.addEventListener('submit', (event) => {
     event.preventDefault()
     const formData = new FormData(event.target)
     const { theme } = Object.fromEntries(formData)
@@ -158,12 +158,12 @@ document.querySelector('[data-settings-form]').addEventListener('submit', (event
         document.documentElement.style.setProperty('--color-light', '255, 255, 255');
     }
     
-    document.querySelector('[data-settings-overlay]').open = false
+    selectors.settingsOverlay.open = false
 })
 
 /**
- * Function tpo handle th esearch form submission
- * @param {*} event 
+ * Function to handle the search form submission
+ * @param {event} event 
  */
 
 function handleSearchFormSubmit(event) {
@@ -199,7 +199,7 @@ function handleListButtonClicked() {
 
 /**
  * Function to filter books
- * @param {*} filters 
+ * @param {Task} filters 
  * @returns 
  */
 function filterBooks(filters) {
@@ -224,7 +224,7 @@ function filterBooks(filters) {
 
 /**
  * Function to toggle the display of the list message based on the number of matches
- * @param {*} show 
+ * @param {Task} show 
  */
 function toggleListMessage(show) {
   selectors.listMessage.classList.toggle('list__message_show', show);
@@ -237,7 +237,7 @@ function clearListItems() {
 
 /**
  * Function to create book previews for a given array of books
- * @param {*} books 
+ * @param {object} books 
  * @returns {fragment}
  */
 function createBookPreviews(books) {
