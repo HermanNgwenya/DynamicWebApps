@@ -38,30 +38,82 @@ const selectors = {
  * and creates a button element for the preview and sets inner HTML of the button with book data.
  * @param {object} book 
  * @returns {element} 
- */
+ */ 
 
-    function createBookPreview(book) {
-    const { author, id, image, title }  = book;
-    const element = document.createElement('button')
-    element.classList = 'preview'
-    element.setAttribute('data-preview', id)
+class BookPreview {
+  constructor(book) {
+    this.book = book;
+    this.element = this.createPreviewElement();
+  }
+
+  createPreviewElement() {
+    const { author, id, image, title } = this.book;
+    const element = document.createElement('button');
+    element.classList = 'preview';
+    element.setAttribute('data-preview', id);
 
     element.innerHTML = `
-        <img
-            class="preview__image"
-            src="${image}"
-        />
-        
-        <div class="preview__info">
-            <h3 class="preview__title">${title}</h3>
-            <div class="preview__author">${authors[author]}</div>
-        </div>
-    `
-    return(element);
+      <img class="preview__image" src="${image}" />
+      <div class="preview__info">
+        <h3 class="preview__title">${title}</h3>
+        <div class="preview__author">${authors[author]}</div>
+      </div>
+    `;
+
+    return element;
+  }
+
+  getElement() {
+    return this.element;
+  }
+
+  getBook() {
+    return this.book;
+  }
+
+  updateBook(book) {
+    this.book = book;
+    this.updatePreviewContent();
+  }
+
+  updatePreviewContent() {
+    const { author, image, title } = this.book;
+    this.element.querySelector('.preview__image').src = image;
+    this.element.querySelector('.preview__title').innerText = title;
+    this.element.querySelector('.preview__author').innerText = authors[author];
+  }
+}
+
+// Modify the createBookPreview function to use the BookPreview class
+function createBookPreview(book) {
+  return new BookPreview(book).getElement();
 }
 
 // Creating initial book previews and appending them to the list
-const starting = document.createDocumentFragment()
+const starting = document.createDocumentFragment();
+
+for (const book of matches.slice(0, BOOKS_PER_PAGE)) {
+  const previewElement = createBookPreview(book);
+  starting.appendChild(previewElement);
+}
+
+selectors.listItems.appendChild(starting);
+
+// Modifying the handleListButtonClicked function to use the BookPreview class
+function handleListButtonClicked() {
+  const fragment = document.createDocumentFragment();
+  const start = page * BOOKS_PER_PAGE;
+  const end = (page + 1) * BOOKS_PER_PAGE;
+
+  const previews = matches.slice(start, end).map((book) => {
+    const preview = new BookPreview(book);
+    fragment.appendChild(preview.getElement());
+    return preview;
+  });
+
+  appendItemsToList(fragment);
+  page += 1;
+}
 
 for (const book of matches.slice(0, BOOKS_PER_PAGE)){
     const previewElement =createBookPreview(book);
@@ -185,23 +237,12 @@ function handleSearchFormSubmit(event) {
   closeSearchOverlay();
 }
 
-// Function to handle the 'Show More' button click
-function handleListButtonClicked() {
-  const fragment = document.createDocumentFragment();
-  const start = page * BOOKS_PER_PAGE;
-  const end = (page + 1) * BOOKS_PER_PAGE;
-
-  const previewElements = createBookPreviews(matches.slice(start, end));
-  appendItemsToList(previewElements);
-
-  page += 1;
-}
-
 /**
  * Function to filter books
  * @param {Task} filters 
  * @returns 
  */
+
 function filterBooks(filters) {
   return books.filter((book) => {
     let genreMatch = filters.genre === 'any';
