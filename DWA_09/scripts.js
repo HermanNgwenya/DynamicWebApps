@@ -45,6 +45,8 @@ const selectors = {
 //     this.book = book;
 //     this.element = this.createPreviewElement();
 //   }
+
+//  Custeom BookPreview component
 class BookPreview extends HTMLElement {
   constructor(){
     super();
@@ -52,64 +54,64 @@ class BookPreview extends HTMLElement {
     this.book = null;
     this.render();
   }
+
+
+  connectedCallback() {
+    this.addEventListener('click', this.handlePreviewClick);
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener('click', this.handlePreviewClick);
+  }
+
+  static get observedAttributes() {
+    return ['book'];
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === 'book') {
+      this.book = JSON.parse(newValue);
+      this.updatePreviewContent();
+    }
+  }
+
+  handlePreviewClick() {
+    // Custom event to dispatch when the preview is clicked
+    const event = new CustomEvent('previewClick', {
+      bubbles: true,
+      detail: {
+        book: this.book,
+      },
+    });
+    this.dispatchEvent(event);
+  }
+
+  updatePreviewContent() {
+    if (this.book) {
+      const { author, image, title } = this.book;
+      this.shadowRoot.querySelector('.preview__image').src = image;
+      this.shadowRoot.querySelector('.preview__title').innerText = title;
+      this.shadowRoot.querySelector('.preview__author').innerText = authors[author];
+    }
+  }
+
+  render() {
+    const template = document.createElement('template');
+    template.innerHTML = `
+      <style>
+        /* Styles for the book preview component */
+      </style>
+      <button class="preview">
+        <img class="preview__image" />
+        <div class="preview__info">
+          <h3 class="preview__title"></h3>
+          <div class="preview__author"></div>
+        </div>
+      </button>
+    `;
+    this.shadowRoot.appendChild(template.content.cloneNode(true));
+  }
 };
-
-connectedCallback() {
-  this.addEventListener('click', this.handlePreviewClick);
-}
-
-disconnectedCallback() {
-  this.removeEventListener('click', this.handlePreviewClick);
-}
-
-static get observedAttributes() {
-  return ['book'];
-}
-
-attributeChangedCallback(name, oldValue, newValue) {
-  if (name === 'book') {
-    this.book = JSON.parse(newValue);
-    this.updatePreviewContent();
-  }
-}
-
-handlePreviewClick() {
-  // Custom event to dispatch when the preview is clicked
-  const event = new CustomEvent('previewClick', {
-    bubbles: true,
-    detail: {
-      book: this.book,
-    },
-  });
-  this.dispatchEvent(event);
-}
-
-updatePreviewContent() {
-  if (this.book) {
-    const { author, image, title } = this.book;
-    this.shadowRoot.querySelector('.preview__image').src = image;
-    this.shadowRoot.querySelector('.preview__title').innerText = title;
-    this.shadowRoot.querySelector('.preview__author').innerText = authors[author];
-  }
-}
-
-render() {
-  const template = document.createElement('template');
-  template.innerHTML = `
-    <style>
-      /* Styles for the book preview component */
-    </style>
-    <button class="preview">
-      <img class="preview__image" />
-      <div class="preview__info">
-        <h3 class="preview__title"></h3>
-        <div class="preview__author"></div>
-      </div>
-    </button>
-  `;
-  this.shadowRoot.appendChild(template.content.cloneNode(true));
-}
-
 
 // Register the custom element
 window.customElements.define('book-preview', BookPreview);
@@ -154,9 +156,10 @@ window.customElements.define('book-preview', BookPreview);
 
 // Modify the createBookPreview function to use the BookPreview class
 function createBookPreview(book) {
-  return new BookPreview(book).getElement();
+  const previewElement = document.createElement('book-preview');
+  previewElement.setAttribute('book', JSON.stringify(book));
+  return previewElement;
 }
-
 // Creating initial book previews and appending them to the list
 const starting = document.createDocumentFragment();
 
@@ -174,9 +177,9 @@ function handleListButtonClicked() {
   const end = (page + 1) * BOOKS_PER_PAGE;
 
   const previews = matches.slice(start, end).map((book) => {
-    const preview = new BookPreview(book);
-    fragment.appendChild(preview.getElement());
-    return preview;
+    const preview = createBookPreview(book);
+    fragment.appendChild(previewElement);
+    return previewElement;
   });
 
   appendItemsToList(fragment);
