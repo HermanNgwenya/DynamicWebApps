@@ -42,9 +42,9 @@ const refreshHandler = () => {
 
 const showMessage = (message) => {
     alert(message);
-    message.disabled = false
+    message = false;
     
-  };
+}
 
 subtractHandler()
 addHandler()
